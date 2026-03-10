@@ -508,10 +508,10 @@ const initOverviewSwiper = async () => {
     loop: false,
     breakpoints: {
       640: {
-        slidesPerView: 2,
+        slidesPerView: 3,
       },
       1024: {
-        slidesPerView: 3,
+        slidesPerView: 4,
       },
     },
     on: {
@@ -859,33 +859,19 @@ const loadAttractionPhotos = async () => {
 }
 
 // 获取景点图片
-const getAttractionImage = (name: string, index: number): string => {
+const getAttractionImage = (name: string, _index: number): string => {
   // 如果已加载真实图片,返回真实图片
   if (attractionPhotos.value[name]) {
     return attractionPhotos.value[name]
   }
 
-  // 返回一个纯色占位图(避免跨域问题)
-  const colors = [
-    { start: '#667eea', end: '#764ba2' },
-    { start: '#f093fb', end: '#f5576c' },
-    { start: '#4facfe', end: '#00f2fe' },
-    { start: '#43e97b', end: '#38f9d7' },
-    { start: '#fa709a', end: '#fee140' }
-  ]
-  const colorIndex = index % colors.length
-  const { start, end } = colors[colorIndex]
+  // 返回一个统一的深色占位图
+  const bg = '#1a262f'
+  const textColor = 'rgba(255,255,255,0.4)'
 
-  // 使用base64编码避免中文问题
   const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="400" height="300">
-    <defs>
-      <linearGradient id="grad${index}" x1="0%" y1="0%" x2="100%" y2="100%">
-        <stop offset="0%" style="stop-color:${start};stop-opacity:1" />
-        <stop offset="100%" style="stop-color:${end};stop-opacity:1" />
-      </linearGradient>
-    </defs>
-    <rect width="400" height="300" fill="url(#grad${index})"/>
-    <text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" font-family="sans-serif" font-size="24" font-weight="bold" fill="white">${name}</text>
+    <rect width="400" height="300" fill="${bg}"/>
+    <text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" font-family="sans-serif" font-size="24" font-weight="bold" fill="${textColor}">${name}</text>
   </svg>`
 
   return `data:image/svg+xml;base64,${btoa(unescape(encodeURIComponent(svg)))}`
@@ -894,9 +880,9 @@ const getAttractionImage = (name: string, index: number): string => {
 // 图片加载失败时的处理
 const handleImageError = (event: Event) => {
   const img = event.target as HTMLImageElement
-  // 使用灰色占位图
+  // 使用深色占位图
   const label = encodeURIComponent(t('result.imageLoadFailed'))
-  img.src = `data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="400" height="300"%3E%3Crect width="400" height="300" fill="%23f0f0f0"/%3E%3Ctext x="50%25" y="50%25" dominant-baseline="middle" text-anchor="middle" font-family="sans-serif" font-size="18" fill="%23999"%3E${label}%3C/text%3E%3C/svg%3E`
+  img.src = `data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="400" height="300"%3E%3Crect width="400" height="300" fill="%231a262f"/%3E%3Ctext x="50%25" y="50%25" dominant-baseline="middle" text-anchor="middle" font-family="sans-serif" font-size="18" fill="rgba(255,255,255,0.4)"%3E${label}%3C/text%3E%3C/svg%3E`
 }
 
 
@@ -1256,13 +1242,248 @@ const initKnowledgeGraph = () => {
   })
 }
 
+const escapeHtml = (value: unknown): string => {
+  return String(value ?? '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;')
+}
+
+const buildMarkerContent = (globalIndex: number, dayIndex: number): string => {
+  return `
+    <div class="tripstar-map-marker" title="${escapeHtml(t('common.dayNumber', { day: dayIndex + 1 }))}">
+      <span class="tripstar-map-marker__pulse"></span>
+      <span class="tripstar-map-marker__core">${globalIndex}</span>
+      <span class="tripstar-map-marker__tag">D${dayIndex + 1}</span>
+    </div>
+  `
+}
+
+const buildInfoWindowContent = (attraction: any): string => {
+  const name = escapeHtml(attraction.name || t('common.noData'))
+  const address = escapeHtml(attraction.address || t('common.noData'))
+  const visitDuration = Number.isFinite(attraction.visit_duration) ? attraction.visit_duration : '—'
+  const description = escapeHtml(attraction.description || t('common.noData')).replace(/\n/g, '<br/>')
+  const dayAttractionText = escapeHtml(
+    t('result.mapInfo.dayAttraction', { day: attraction.dayIndex + 1, index: attraction.attrIndex + 1 })
+  )
+  const addressLabel = escapeHtml(t('result.fieldAddress'))
+  const durationLabel = escapeHtml(t('result.fieldVisitDuration'))
+  const descLabel = escapeHtml(t('result.fieldDescription'))
+  const minuteUnit = escapeHtml(t('result.minuteUnit'))
+
+  return `
+    <article class="tripstar-map-tooltip">
+      <header class="tripstar-map-tooltip__header">
+        <h4 class="tripstar-map-tooltip__title">${name}</h4>
+        <span class="tripstar-map-tooltip__badge">${dayAttractionText}</span>
+      </header>
+      <div class="tripstar-map-tooltip__body">
+        <p class="tripstar-map-tooltip__line">
+          <span class="tripstar-map-tooltip__label">${addressLabel}</span>
+          <span>${address}</span>
+        </p>
+        <p class="tripstar-map-tooltip__line">
+          <span class="tripstar-map-tooltip__label">${durationLabel}</span>
+          <span>${visitDuration}${minuteUnit}</span>
+        </p>
+        <p class="tripstar-map-tooltip__line">
+          <span class="tripstar-map-tooltip__label">${descLabel}</span>
+          <span>${description}</span>
+        </p>
+      </div>
+      <span class="tripstar-map-tooltip__arrow"></span>
+    </article>
+  `
+}
+
+type RouteMode = 'driving' | 'walking' | 'straight'
+type RoutePoint = [number, number]
+
+const ROUTE_STYLE_PRESETS: Record<
+  RouteMode,
+  {
+    strokeColor: string
+    strokeWeight: number
+    strokeOpacity: number
+    strokeStyle: 'solid' | 'dashed'
+    strokeDasharray?: number[]
+    lineJoin?: 'round' | 'miter' | 'bevel'
+    lineCap?: 'butt' | 'round' | 'square'
+    outlineColor?: string
+    borderWeight?: number
+  }
+> = {
+  driving: {
+    strokeColor: '#37b4ff',
+    strokeWeight: 6,
+    strokeOpacity: 0.92,
+    strokeStyle: 'solid',
+    lineJoin: 'round',
+    lineCap: 'round',
+    outlineColor: 'rgba(4, 19, 32, 0.7)',
+    borderWeight: 2,
+  },
+  walking: {
+    strokeColor: '#6ad38f',
+    strokeWeight: 5,
+    strokeOpacity: 0.9,
+    strokeStyle: 'dashed',
+    strokeDasharray: [12, 8],
+    lineJoin: 'round',
+    lineCap: 'round',
+    outlineColor: 'rgba(8, 32, 20, 0.5)',
+    borderWeight: 1,
+  },
+  straight: {
+    strokeColor: '#ff9b64',
+    strokeWeight: 4,
+    strokeOpacity: 0.82,
+    strokeStyle: 'dashed',
+    strokeDasharray: [10, 10],
+    lineJoin: 'round',
+    lineCap: 'round',
+    outlineColor: 'rgba(33, 17, 8, 0.45)',
+    borderWeight: 1,
+  },
+}
+
+const detectRouteMode = (transportation: string): RouteMode => {
+  const normalized = (transportation || '').toLowerCase()
+  if (/(步行|徒步|散步|walk|walking)/i.test(normalized)) return 'walking'
+  if (/(驾车|开车|自驾|打车|出租车|car|drive|driving|taxi)/i.test(normalized)) return 'driving'
+  return 'driving'
+}
+
+const toRoutePoint = (raw: any): RoutePoint | null => {
+  if (!raw) return null
+
+  if (Array.isArray(raw) && raw.length >= 2) {
+    const lng = Number(raw[0])
+    const lat = Number(raw[1])
+    return Number.isFinite(lng) && Number.isFinite(lat) ? [lng, lat] : null
+  }
+
+  if (typeof raw.getLng === 'function' && typeof raw.getLat === 'function') {
+    const lng = Number(raw.getLng())
+    const lat = Number(raw.getLat())
+    return Number.isFinite(lng) && Number.isFinite(lat) ? [lng, lat] : null
+  }
+
+  if ('lng' in raw && 'lat' in raw) {
+    const lng = Number(raw.lng)
+    const lat = Number(raw.lat)
+    return Number.isFinite(lng) && Number.isFinite(lat) ? [lng, lat] : null
+  }
+
+  if ('longitude' in raw && 'latitude' in raw) {
+    const lng = Number(raw.longitude)
+    const lat = Number(raw.latitude)
+    return Number.isFinite(lng) && Number.isFinite(lat) ? [lng, lat] : null
+  }
+
+  return null
+}
+
+const parsePolylineString = (polyline: string): RoutePoint[] => {
+  if (!polyline) return []
+
+  return polyline
+    .split(';')
+    .map((pair) => pair.split(','))
+    .map((parts) => {
+      const lng = Number(parts[0])
+      const lat = Number(parts[1])
+      return Number.isFinite(lng) && Number.isFinite(lat) ? ([lng, lat] as RoutePoint) : null
+    })
+    .filter((point): point is RoutePoint => Boolean(point))
+}
+
+const dedupeRoutePath = (points: RoutePoint[]): RoutePoint[] => {
+  if (points.length <= 1) return points
+  return points.filter((point, index, array) => {
+    if (index === 0) return true
+    const prev = array[index - 1]
+    return point[0] !== prev[0] || point[1] !== prev[1]
+  })
+}
+
+const extractRoutePath = (result: any): RoutePoint[] => {
+  const route =
+    result?.routes?.[0] ||
+    result?.route?.paths?.[0] ||
+    result?.route?.routes?.[0] ||
+    null
+
+  if (!route) return []
+
+  const steps = route.steps || []
+  const points: RoutePoint[] = []
+
+  steps.forEach((step: any) => {
+    if (Array.isArray(step?.path)) {
+      step.path.forEach((node: any) => {
+        const point = toRoutePoint(node)
+        if (point) points.push(point)
+      })
+      return
+    }
+
+    if (typeof step?.polyline === 'string') {
+      points.push(...parsePolylineString(step.polyline))
+    }
+  })
+
+  if (points.length > 1) return dedupeRoutePath(points)
+
+  if (typeof route?.polyline === 'string') {
+    const fromRoute = dedupeRoutePath(parsePolylineString(route.polyline))
+    if (fromRoute.length > 1) return fromRoute
+  }
+
+  return []
+}
+
+const searchRoutePath = (
+  AMap: any,
+  mode: Exclude<RouteMode, 'straight'>,
+  start: RoutePoint,
+  end: RoutePoint
+): Promise<RoutePoint[] | null> => {
+  return new Promise((resolve) => {
+    const ServiceCtor = mode === 'walking' ? AMap.Walking : AMap.Driving
+    if (!ServiceCtor) {
+      resolve(null)
+      return
+    }
+
+    const service =
+      mode === 'driving'
+        ? new ServiceCtor({
+            policy: AMap.DrivingPolicy?.LEAST_TIME ?? 0,
+          })
+        : new ServiceCtor({})
+
+    service.search(start, end, (status: string, result: any) => {
+      if (status !== 'complete') {
+        resolve(null)
+        return
+      }
+      const path = extractRoutePath(result)
+      resolve(path.length > 1 ? path : null)
+    })
+  })
+}
+
 // 初始化地图
 const initMap = async () => {
   try {
     const AMap = await AMapLoader.load({
       key: import.meta.env.VITE_AMAP_WEB_JS_KEY,  // 高德地图Web端(JS API) Key
       version: '2.0',
-      plugins: ['AMap.Marker', 'AMap.Polyline', 'AMap.InfoWindow']
+      plugins: ['AMap.Marker', 'AMap.Polyline', 'AMap.InfoWindow', 'AMap.Driving', 'AMap.Walking']
     })
 
     // 创建地图实例
@@ -1273,7 +1494,7 @@ const initMap = async () => {
     })
 
     // 添加景点标记
-    addAttractionMarkers(AMap)
+    await addAttractionMarkers(AMap)
 
     message.success(t('result.messages.mapLoaded'))
   } catch (error) {
@@ -1283,7 +1504,7 @@ const initMap = async () => {
 }
 
 // 添加景点标记
-const addAttractionMarkers = (AMap: any) => {
+const addAttractionMarkers = async (AMap: any) => {
   if (!tripPlan.value) return
 
   const markers: any[] = []
@@ -1310,24 +1531,18 @@ const addAttractionMarkers = (AMap: any) => {
     const marker = new AMap.Marker({
       position: [attraction.location.longitude, attraction.location.latitude],
       title: attraction.name,
-      label: {
-        content: `<div style="background: #4CAF50; color: white; padding: 4px 8px; border-radius: 4px; font-size: 12px;">${index + 1}</div>`,
-        offset: new AMap.Pixel(0, -30)
-      }
+      content: buildMarkerContent(index + 1, attraction.dayIndex),
+      anchor: 'bottom-center',
+      offset: new AMap.Pixel(0, -8),
+      zIndex: 120 + index,
     })
 
     // 创建信息窗口
     const infoWindow = new AMap.InfoWindow({
-      content: `
-        <div style="padding: 10px; color: #333;">
-          <h4 style="margin: 0 0 8px 0; color: #1a1a1a;">${attraction.name}</h4>
-          <p style="margin: 4px 0;"><strong>${t('result.fieldAddress')}:</strong> ${attraction.address}</p>
-          <p style="margin: 4px 0;"><strong>${t('result.fieldVisitDuration')}:</strong> ${attraction.visit_duration}${t('result.minuteUnit')}</p>
-          <p style="margin: 4px 0;"><strong>${t('result.fieldDescription')}:</strong> ${attraction.description}</p>
-          <p style="margin: 4px 0; color: #1890ff;"><strong>${t('result.mapInfo.dayAttraction', { day: attraction.dayIndex + 1, index: attraction.attrIndex + 1 })}</strong></p>
-        </div>
-      `,
-      offset: new AMap.Pixel(0, -30)
+      isCustom: true,
+      content: buildInfoWindowContent(attraction),
+      offset: new AMap.Pixel(0, -52),
+      closeWhenClickMap: true,
     })
 
     // 点击标记显示信息窗口
@@ -1341,21 +1556,22 @@ const addAttractionMarkers = (AMap: any) => {
   // 添加标记到地图
   map.add(markers)
 
+  // 绘制路线（优先真实道路路线，失败时回退直线）
+  const routePolylines = await drawRoutes(AMap, allAttractions)
+
   // 自动调整视野以包含所有标记
   if (allAttractions.length > 0) {
-    map.setFitView(markers)
+    const overlaysForFit = routePolylines.length > 0 ? [...markers, ...routePolylines] : markers
+    map.setFitView(overlaysForFit)
   }
-
-  // 绘制路线
-  drawRoutes(AMap, allAttractions)
 }
 
-// 绘制路线
-const drawRoutes = (AMap: any, attractions: any[]) => {
-  if (attractions.length < 2) return
+// 绘制路线：根据交通方式选择 driving / walking；失败时降级为直线
+const drawRoutes = async (AMap: any, attractions: any[]): Promise<any[]> => {
+  if (attractions.length < 2 || !tripPlan.value) return []
 
   // 按天分组绘制路线
-  const dayGroups: any = {}
+  const dayGroups: Record<number, any[]> = {}
   attractions.forEach(attr => {
     if (!dayGroups[attr.dayIndex]) {
       dayGroups[attr.dayIndex] = []
@@ -1363,26 +1579,49 @@ const drawRoutes = (AMap: any, attractions: any[]) => {
     dayGroups[attr.dayIndex].push(attr)
   })
 
-  // 为每天的景点绘制路线
-  Object.values(dayGroups).forEach((dayAttractions: any) => {
-    if (dayAttractions.length < 2) return
+  const polylines: any[] = []
 
-    const path = dayAttractions.map((attr: any) => [
-      attr.location.longitude,
-      attr.location.latitude
-    ])
+  // 为每天的景点逐段绘制路线
+  for (const dayAttractions of Object.values(dayGroups)) {
+    if (dayAttractions.length < 2) continue
 
-    const polyline = new AMap.Polyline({
-      path: path,
-      strokeColor: '#1890ff',
-      strokeWeight: 4,
-      strokeOpacity: 0.8,
-      strokeStyle: 'solid',
-      showDir: true // 显示方向箭头
-    })
+    dayAttractions.sort((a: any, b: any) => a.attrIndex - b.attrIndex)
+    const dayIndex = dayAttractions[0].dayIndex
+    const transportation = tripPlan.value.days?.[dayIndex]?.transportation || ''
+    const preferredMode = detectRouteMode(transportation)
 
-    map.add(polyline)
-  })
+    for (let i = 0; i < dayAttractions.length - 1; i++) {
+      const start = dayAttractions[i]
+      const end = dayAttractions[i + 1]
+      const startPoint: RoutePoint = [start.location.longitude, start.location.latitude]
+      const endPoint: RoutePoint = [end.location.longitude, end.location.latitude]
+
+      const plannedPath =
+        preferredMode === 'straight'
+          ? null
+          : await searchRoutePath(AMap, preferredMode as Exclude<RouteMode, 'straight'>, startPoint, endPoint)
+
+      const usePlannedRoute = Array.isArray(plannedPath) && plannedPath.length > 1
+      const routeModeForStyle: RouteMode = usePlannedRoute ? preferredMode : 'straight'
+      const path = usePlannedRoute ? plannedPath : [startPoint, endPoint]
+      const style = ROUTE_STYLE_PRESETS[routeModeForStyle]
+
+      const polyline = new AMap.Polyline({
+        path,
+        ...style,
+        showDir: true,
+        zIndex: 90,
+      })
+
+      polylines.push(polyline)
+    }
+  }
+
+  if (polylines.length > 0) {
+    map.add(polylines)
+  }
+
+  return polylines
 }
 </script>
 
@@ -1737,23 +1976,19 @@ const drawRoutes = (AMap: any, attractions: any[]) => {
 }
 
 .overview-swiper {
-  width: 100%;
   padding: 8px 2px 14px;
 }
 
 .overview-swiper .swiper {
-  width: 100%;
-  padding: 1.875rem 0;
-  overflow: visible;
+  padding: 1.875rem 0rem;
+  overflow: hidden;
+  border-radius: 12px;
 }
 
 .overview-swiper .swiper-wrapper {
   align-items: flex-end;
 }
 
-.overview-swiper :deep(.swiper-slide) {
-  width: 18.75rem;
-}
 
 /* 预算卡片 */
 .budget-card {
@@ -2137,9 +2372,6 @@ const drawRoutes = (AMap: any, attractions: any[]) => {
     gap: 1rem;
   }
 
-  .overview-swiper :deep(.swiper-slide) {
-    width: min(78vw, 18.75rem);
-  }
 }
 
 /* ============ AI 聊天窗口 ============ */
@@ -2367,6 +2599,164 @@ const drawRoutes = (AMap: any, attractions: any[]) => {
 .chat-send-btn:disabled {
   opacity: 0.4;
   cursor: not-allowed;
+}
+</style>
+
+<style>
+:root {
+  --tripstar-map-accent: #d76e42;
+  --tripstar-map-accent-strong: #a14625;
+  --tripstar-map-surface: rgba(17, 29, 38, 0.96);
+  --tripstar-map-border: rgba(215, 110, 66, 0.35);
+  --tripstar-map-text-main: #f6fbff;
+  --tripstar-map-text-sub: rgba(240, 246, 252, 0.72);
+}
+
+.tripstar-map-marker {
+  position: relative;
+  width: 44px;
+  height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+.tripstar-map-marker__pulse {
+  position: absolute;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(215, 110, 66, 0.38) 0%, rgba(215, 110, 66, 0) 72%);
+  animation: tripstarMapPulse 2s ease-out infinite;
+}
+
+.tripstar-map-marker__core {
+  position: relative;
+  z-index: 2;
+  min-width: 28px;
+  height: 28px;
+  padding: 0 8px;
+  border-radius: 999px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(140deg, var(--tripstar-map-accent) 0%, var(--tripstar-map-accent-strong) 100%);
+  color: #fff;
+  font-size: 13px;
+  font-weight: 700;
+  border: 1px solid rgba(255, 255, 255, 0.65);
+  box-shadow: 0 8px 22px rgba(161, 70, 37, 0.46);
+}
+
+.tripstar-map-marker__tag {
+  position: absolute;
+  right: -8px;
+  top: -6px;
+  z-index: 3;
+  min-width: 24px;
+  padding: 2px 6px;
+  border-radius: 999px;
+  background: rgba(11, 22, 30, 0.9);
+  color: #ffd8c8;
+  border: 1px solid rgba(255, 214, 194, 0.34);
+  font-size: 10px;
+  font-weight: 700;
+  text-align: center;
+  line-height: 1.2;
+}
+
+.tripstar-map-tooltip {
+  width: min(330px, calc(100vw - 42px));
+  border-radius: 16px;
+  border: 1px solid var(--tripstar-map-border);
+  background: linear-gradient(160deg, rgba(20, 33, 44, 0.98) 0%, var(--tripstar-map-surface) 100%);
+  backdrop-filter: blur(10px);
+  box-shadow: 0 18px 36px rgba(4, 10, 15, 0.55);
+  color: var(--tripstar-map-text-main);
+  overflow: hidden;
+  position: relative;
+}
+
+.tripstar-map-tooltip__header {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 14px 10px;
+  border-bottom: 1px solid rgba(236, 243, 250, 0.12);
+  background: linear-gradient(130deg, rgba(215, 110, 66, 0.2) 0%, rgba(215, 110, 66, 0.05) 100%);
+}
+
+.tripstar-map-tooltip__title {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--tripstar-map-text-main);
+  line-height: 1.35;
+}
+
+.tripstar-map-tooltip__badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  max-width: 146px;
+  padding: 3px 8px;
+  border-radius: 999px;
+  background: rgba(6, 15, 22, 0.72);
+  color: #ffd8c8;
+  border: 1px solid rgba(255, 216, 200, 0.34);
+  font-size: 10px;
+  font-weight: 600;
+  text-align: center;
+}
+
+.tripstar-map-tooltip__body {
+  display: grid;
+  gap: 8px;
+  padding: 12px 14px;
+}
+
+.tripstar-map-tooltip__line {
+  margin: 0;
+  display: grid;
+  gap: 4px;
+  font-size: 12px;
+  line-height: 1.55;
+  color: var(--tripstar-map-text-main);
+}
+
+.tripstar-map-tooltip__label {
+  font-size: 11px;
+  color: var(--tripstar-map-text-sub);
+  letter-spacing: 0.02em;
+}
+
+.tripstar-map-tooltip__arrow {
+  position: absolute;
+  left: 50%;
+  bottom: -7px;
+  width: 14px;
+  height: 14px;
+  transform: translateX(-50%) rotate(45deg);
+  background: rgba(17, 29, 38, 0.98);
+  border-right: 1px solid var(--tripstar-map-border);
+  border-bottom: 1px solid var(--tripstar-map-border);
+}
+
+@keyframes tripstarMapPulse {
+  0% {
+    transform: scale(0.72);
+    opacity: 0.52;
+  }
+  80% {
+    transform: scale(1.18);
+    opacity: 0;
+  }
+  100% {
+    transform: scale(1.18);
+    opacity: 0;
+  }
 }
 </style>
 
