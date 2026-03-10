@@ -62,23 +62,12 @@
         </div>
 
       <!-- 主内容区 -->
-      <div class="main-content">
         <a-card
           v-show="activeSection === 'overview'"
           id="overview"
-          :title="t('result.overviewTitle', { city: tripPlan.city })"
           :bordered="false"
-          class="overview-card"
+          class="overview-card section-shellless"
         >
-          <div class="overview-meta">
-            <span class="overview-meta-item">
-              {{ t('result.dateRange', { start: tripPlan.start_date, end: tripPlan.end_date }) }}
-            </span>
-            <span v-if="tripPlan.overall_suggestions" class="overview-meta-item">
-              {{ tripPlan.overall_suggestions }}
-            </span>
-          </div>
-
           <div v-if="overviewAttractions.length > 0" ref="overviewSwiperContainerRef" class="overview-swiper">
             <div class="swiper">
               <div class="swiper-wrapper">
@@ -96,6 +85,14 @@
             </div>
           </div>
           <a-empty v-else :description="t('common.noData')" />
+          <div class="overview-meta">
+            <span class="overview-meta-item">
+              {{ t('result.dateRange', { start: tripPlan.start_date, end: tripPlan.end_date }) }}
+            </span>
+            <span v-if="tripPlan.overall_suggestions" class="overview-meta-item">
+              {{ tripPlan.overall_suggestions }}
+            </span>
+          </div>
         </a-card>
 
         <!-- 顶部信息区:预算/地图 -->
@@ -105,9 +102,8 @@
               v-show="activeSection === 'budget' && !!tripPlan.budget"
               id="budget"
               v-if="tripPlan.budget"
-              :title="t('result.budget.title')"
               :bordered="false"
-              class="budget-card"
+              class="budget-card section-shellless"
             >
               <div class="budget-grid">
                 <div class="budget-item">
@@ -135,14 +131,14 @@
           </div>
 
           <div class="right-map" v-show="activeSection === 'map'">
-            <a-card id="map" :title="t('result.mapTitle')" :bordered="false" class="map-card">
+            <a-card id="map" :bordered="false" class="map-card section-shellless">
               <div id="amap-container" style="width: 100%; height: 100%"></div>
             </a-card>
           </div>
         </div>
 
         <!-- 知识图谱 -->
-        <a-card v-show="activeSection === 'knowledge-graph'" id="knowledge-graph" :title="t('result.graphTitle')" :bordered="false" class="kg-card">
+        <a-card v-show="activeSection === 'knowledge-graph'" id="knowledge-graph" :bordered="false" class="kg-card section-shellless">
           <div id="kg-chart-container" style="width: 100%; height: 600px;"></div>
           <div class="kg-legend">
             <span v-for="cat in graphCategories" :key="cat.name" class="kg-legend-item">
@@ -153,7 +149,7 @@
         </a-card>
 
         <!-- 每日行程:可折叠 -->
-        <a-card v-show="activeSection === 'days'" :title="t('result.dailyTitle')" :bordered="false" class="days-card">
+        <a-card v-show="activeSection === 'days'" :bordered="false" class="days-card section-shellless">
           <a-collapse v-model:activeKey="activeDays" accordion>
             <a-collapse-panel
               v-for="(day, index) in tripPlan.days"
@@ -294,9 +290,9 @@
           v-show="activeSection === 'weather' && tripPlan.weather_info && tripPlan.weather_info.length > 0"
           id="weather"
           v-if="tripPlan.weather_info && tripPlan.weather_info.length > 0"
-          :title="t('result.weatherTitle')"
           style="margin-top: 20px"
           :bordered="false"
+          class="section-shellless weather-section-card"
         >
         <a-list
           :data-source="tripPlan.weather_info"
@@ -326,7 +322,6 @@
           </template>
         </a-list>
         </a-card>
-      </div>
       </div>
 
       <div v-else class="empty-state-panel">
@@ -1782,10 +1777,6 @@ const drawRoutes = async (AMap: any, attractions: any[]): Promise<any[]> => {
   box-shadow: none !important;
 }
 
-.main-content {
-  width: 100%;
-}
-
 /* 景点图片样式 */
 .attraction-image-wrapper {
   position: relative;
@@ -1956,6 +1947,25 @@ const drawRoutes = async (AMap: any, attractions: any[]): Promise<any[]> => {
   margin-bottom: 20px;
 }
 
+.section-shellless {
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+}
+
+.section-shellless:hover {
+  box-shadow: none !important;
+  border-color: transparent !important;
+}
+
+:deep(.section-shellless > .ant-card-head) {
+  display: none !important;
+}
+
+:deep(.section-shellless > .ant-card-body) {
+  padding: 0 !important;
+}
+
 .overview-meta {
   display: flex;
   flex-wrap: wrap;
@@ -1966,10 +1976,10 @@ const drawRoutes = async (AMap: any, attractions: any[]): Promise<any[]> => {
 .overview-meta-item {
   display: inline-flex;
   align-items: center;
-  padding: 8px 12px;
-  border-radius: 999px;
+  padding: 3px 12px;
+  /* border-radius: 999px;
   border: 1px solid rgba(255, 255, 255, 0.12);
-  background: rgba(255, 255, 255, 0.04);
+  background: rgba(255, 255, 255, 0.04); */
   color: rgba(236, 243, 250, 0.78);
   font-size: 12px;
   line-height: 1.5;
@@ -2059,7 +2069,7 @@ const drawRoutes = async (AMap: any, attractions: any[]): Promise<any[]> => {
 }
 
 .map-card :deep(.ant-card-body) {
-  height: calc(100% - 57px);
+  height: 100%;
   padding: 0;
 }
 
