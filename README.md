@@ -35,8 +35,9 @@
 * **沉浸式伴游 AI 问答**: 在生成报告后，提供悬浮式 AI 问答窗口（左下角），AI 拥有完整行程的上下文记忆，用户可随时针对行程细节（如票价、适宜性）进行追问。
 * **奢华暗黑玻璃拟物风**: 全新设计的暗黑系玻璃拟物化 (Dark Luxury Glassmorphism) 界面，提供极具沉浸感的高级视觉体验。
 ---
-> 举个例子要去中国——洛阳（目前只支持国内）玩耍，只需要填写地点、日期、偏好设置，即可等待行程规划的结果，一眼预览如何安排旅游景点
-<img width="1234" height="564" alt="image" src="https://github.com/user-attachments/assets/76ea87ea-e9ed-4248-9f34-91394a0b5308" />
+> 举个例子要去中国——西安（目前只支持国内）玩耍，只需要填写地点、日期、偏好设置，即可等待行程规划的结果，一眼预览如何安排旅游景点
+<img width="1606" height="740" alt="image" src="https://github.com/user-attachments/assets/699fa242-b959-460d-9442-90be0b19db22" />
+
 
 
 ## 系统架构
@@ -214,8 +215,9 @@ TripStar/
 ```
 
 > 下面是部分运行结果，丰富的功能探索中...
+<img width="1600" height="799" alt="image" src="https://github.com/user-attachments/assets/20221707-c115-4da7-aa49-80eec772bc33" />
+<img width="1598" height="801" alt="image" src="https://github.com/user-attachments/assets/1b4b745e-98f1-4868-a6dd-d32909077713" />
 
-<img width="1720" height="754" alt="image" src="https://github.com/user-attachments/assets/e7189304-f17e-43ee-8f62-4c3170de6025" />
 
 ## 后续优化方向
 - [x] ~~接入小红书，获得高质量计划~~（v2.0 已完成）
