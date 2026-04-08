@@ -30,9 +30,9 @@ FROM python:3.10-slim
 
 WORKDIR /app
 
-# 安装系统依赖
+# 安装系统依赖及 Node.js(用于执行小红书签名引擎)
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    gcc curl \
+    gcc curl nodejs npm \
     && rm -rf /var/lib/apt/lists/*
 
 # 复制后端依赖并安装
@@ -46,8 +46,9 @@ RUN pip install --no-cache-dir gunicorn uvicorn[standard] -i https://mirrors.ali
 RUN pip install --no-cache-dir uv -i https://mirrors.aliyun.com/pypi/simple/ \
     && uvx amap-mcp-server --help || true
 
-# 复制后端代码
+# 复制后端代码并安装 Node.js 依赖
 COPY backend/ ./backend/
+RUN cd backend && npm install --registry=https://registry.npmmirror.com
 
 # 从阶段一复制前端构建产物
 COPY --from=frontend-builder /build/dist ./frontend/dist
