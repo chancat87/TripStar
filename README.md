@@ -1,5 +1,4 @@
 <div align="center" style="display: flex; justify-content: center; align-items: center; gap: 2px;">
-  <img width="130" alt="标头1" src="https://github.com/user-attachments/assets/daddae63-2000-4695-acf8-7722ab2162ae" />
   <img width="400" alt="brand" src="https://github.com/user-attachments/assets/50c490da-9042-4661-bf8f-f7fd8084a506" />
 </div>
 <p align="center">
