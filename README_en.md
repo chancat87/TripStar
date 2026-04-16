@@ -256,7 +256,7 @@ TripStar/
 - [x] ~~i18n Multi-Language Model Inference Adaptation & Deep Knowledge Graph Translation~~
 - [x] ~~History Plans Record Support~~
 - [x] ~~HTTP/SOCKS5 Proxy Config~~
-- [ ] Better Export Image aesthetics
+- [x] ~~Better Export Image aesthetics~~
 - [ ] Multi-City Travel Planning
 - [ ] Advanced Dining Recommendations
 
