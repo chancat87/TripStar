@@ -17,6 +17,8 @@ services:
       - LLM_TIMEOUT=${LLM_TIMEOUT:-600}
       - VITE_AMAP_WEB_KEY=${VITE_AMAP_WEB_KEY:-your_web_api_key_here}
       - XHS_COOKIE=${XHS_COOKIE:-your_xhs_cookie_here}
+      - GOOGLE_MAPS_API_KEY=${GOOGLE_MAPS_API_KEY:-}
+      - GOOGLE_MAPS_PROXY=${GOOGLE_MAPS_PROXY:-}
       - HOST=0.0.0.0
       - PORT=7860
       - LOG_LEVEL=INFO
