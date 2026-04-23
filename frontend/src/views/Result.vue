@@ -1869,10 +1869,10 @@ const buildExportHTML = (mapDataUrl: string = ''): string => {
       attractionsHTML += `
         <div style="flex:0 0 48%;background:#fff;border-radius:10px;padding:14px;box-shadow:0 2px 8px rgba(0,0,0,0.07);margin-bottom:14px;">
           ${imgTag}
-          <h4 style="margin:0 0 6px;font-size:15px;color:#1a1a1a;">${ai + 1}. ${a.name}</h4>
-          <p style="margin:2px 0;font-size:12px;color:#555;">${a.address || '—'}</p>
-          <p style="margin:2px 0;font-size:12px;color:#555;">${durationText}${a.ticket_price ? `  |  ¥${a.ticket_price}` : ''}</p>
-          <p style="margin:4px 0;font-size:12px;color:#666;">${a.description || ''}</p>
+          <h4 style="margin:0 0 6px;font-size:17px;color:#1a1a1a;">${ai + 1}. ${a.name}</h4>
+          <p style="margin:2px 0;font-size:14px;color:#555;">${a.address || '—'}</p>
+          <p style="margin:2px 0;font-size:14px;color:#555;">${durationText}${a.ticket_price ? `  |  ¥${a.ticket_price}` : ''}</p>
+          <p style="margin:4px 0;font-size:14px;color:#666;">${a.description || ''}</p>
         </div>`
     })
 
@@ -1917,7 +1917,7 @@ const buildExportHTML = (mapDataUrl: string = ''): string => {
             <div style="font-size:12px;color:#888;">${t('result.budget.transport')}</div><div style="font-size:20px;font-weight:bold;color:#333;">¥${b.total_transportation || 0}</div>
           </div>
         </div>
-        <div style="background:linear-gradient(135deg,#667eea,#764ba2);color:#fff;padding:16px 20px;border-radius:12px;display:flex;justify-content:space-between;align-items:center;">
+        <div style="background:#667eea;color:#fff;padding:16px 20px;border-radius:12px;display:flex;justify-content:space-between;align-items:center;">
           <span style="font-size:16px;">${t('result.budget.total')}</span>
           <span style="font-size:26px;font-weight:bold;">¥${b.total || 0}</span>
         </div>
